@@ -1,0 +1,76 @@
+#include <pthread.h>
+#include <semaphore.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <matelib.h>
+
+sem_t *va_el_3;
+
+void imprimir_carpincho_n_hace_algo(int numero_de_carpincho)
+{
+    fprintf(stdout, "EJECUTANDO Carpincho %d\n", numero_de_carpincho);
+    usleep(500);
+}
+
+void exec_carpincho_1(char *config)
+{
+    mate_instance self;
+    mate_init(&self, config);
+    for (int i = 0; i < 5; i++)
+    {
+        imprimir_carpincho_n_hace_algo(1);
+        mate_call_io(&self, (mate_io_resource) "PRINTER", "Carpincho 1 se va a IO");
+    }
+    mate_close(&self);
+}
+
+void exec_carpincho_2(char *config)
+{
+    mate_instance self;
+    mate_init(&self, config);
+    sem_post(va_el_3); //Creo que esta demas, es para que el 3 entre dsp del 2
+    for (int i = 0; i < 5; i++)
+    {
+        imprimir_carpincho_n_hace_algo(2);
+        mate_call_io(&self, (mate_io_resource) "PRINTER", "Carpincho 2 se va a IO");
+    }
+    mate_close(&self);
+}
+
+void exec_carpincho_3(char *config)
+{
+    mate_instance self;
+    mate_init(&self, config);
+    sem_wait(va_el_3);
+    for (int i = 0; i < 5; i++)
+    {
+        imprimir_carpincho_n_hace_algo(3);
+        imprimir_carpincho_n_hace_algo(3);
+        imprimir_carpincho_n_hace_algo(3);
+        imprimir_carpincho_n_hace_algo(3);
+        imprimir_carpincho_n_hace_algo(3);
+        mate_call_io(&self, (mate_io_resource) "PRINTER", "Carpincho 3 se va a IO");
+    }
+    mate_close(&self);
+}
+
+int main(int argc, char *argv[])
+{
+
+    pthread_t carpincho1_thread;
+    pthread_t carpincho2_thread;
+    pthread_t carpincho3_thread;
+
+    va_el_3 = malloc(sizeof(sem_t));
+    sem_init(va_el_3, 1, 0);
+
+    pthread_create(&carpincho1_thread, NULL, (void *)exec_carpincho_1, argv[1]);
+    pthread_create(&carpincho2_thread, NULL, (void *)exec_carpincho_2, argv[1]);
+    pthread_create(&carpincho3_thread, NULL, (void *)exec_carpincho_3, argv[1]);
+    pthread_detach(carpincho1_thread);
+    pthread_detach(carpincho2_thread);
+    pthread_join(carpincho3_thread, NULL);
+    sem_destroy(va_el_3);
+    puts("Termine!");
+}
