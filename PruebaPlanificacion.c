@@ -3,14 +3,18 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <matelib.h>
+#include <lib/matelib.h>
+#include <commons/log.h>
 
+char *LOG_PATH = "./planificacion.log";
+char *PROGRAM_NAME = "planificacion";
 sem_t *va_el_3;
+t_log *logger;
 
 void imprimir_carpincho_n_hace_algo(int numero_de_carpincho)
 {
-    fprintf(stdout, "EJECUTANDO Carpincho %d\n", numero_de_carpincho);
-    usleep(500);
+    log_info(logger, "EJECUTANDO Carpincho %d", numero_de_carpincho);
+    sleep(2);
 }
 
 void exec_carpincho_1(char *config)
@@ -55,9 +59,15 @@ void exec_carpincho_3(char *config)
     mate_close(&self);
 }
 
+void free_all()
+{
+    sem_destroy(va_el_3);
+    log_destroy(logger);
+}
+
 int main(int argc, char *argv[])
 {
-
+    logger = log_create(LOG_PATH, PROGRAM_NAME, true, LOG_LEVEL_DEBUG);
     pthread_t carpincho1_thread;
     pthread_t carpincho2_thread;
     pthread_t carpincho3_thread;
@@ -68,9 +78,9 @@ int main(int argc, char *argv[])
     pthread_create(&carpincho1_thread, NULL, (void *)exec_carpincho_1, argv[1]);
     pthread_create(&carpincho2_thread, NULL, (void *)exec_carpincho_2, argv[1]);
     pthread_create(&carpincho3_thread, NULL, (void *)exec_carpincho_3, argv[1]);
-    pthread_detach(carpincho1_thread);
-    pthread_detach(carpincho2_thread);
+    pthread_join(carpincho1_thread, NULL);
+    pthread_join(carpincho2_thread, NULL);
     pthread_join(carpincho3_thread, NULL);
-    sem_destroy(va_el_3);
+    free_all();
     puts("Termine!");
 }
