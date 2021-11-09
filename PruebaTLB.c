@@ -12,6 +12,29 @@ pthread_mutex_t seed_mutex;
 t_log* logger;
 pthread_mutex_t logger_mutex;
 
+void print_thread_info(char* thread_name, int value)
+{
+  pthread_mutex_lock(&logger_mutex);
+  log_info(logger, "thread name: %s", thread_name);
+  log_info(logger, "value: %d", value);
+  pthread_mutex_unlock(&logger_mutex);
+}
+
+void increment_seed()
+{
+  pthread_mutex_lock(&seed_mutex);
+  seed++;
+  pthread_mutex_unlock(&seed_mutex);
+}
+
+void calculate_value_and_increment_seed(uint32_t* current_value)
+{
+  pthread_mutex_lock(&seed_mutex);
+  (*current_value) += seed;
+  seed++;
+  pthread_mutex_unlock(&seed_mutex);
+}
+
 void *thread(void *config_path)
 {
   mate_instance mate_ref;
@@ -22,14 +45,9 @@ void *thread(void *config_path)
   mate_pointer value = mate_memalloc(mate_ref, sizeof(uint32_t));
   mate_memwrite(mate_ref, seed, value, sizeof(uint32_t));
 
-  pthread_mutex_lock(&logger_mutex);
-  log_info(logger, "thread name: %s", "CHILD");
-  log_info(logger, "value: %d", seed);
-  pthread_mutex_unlock(&logger_mutex);
+  print_thread_info("CHILD", seed);
 
-  pthread_mutex_lock(&seed_mutex);
-  seed++;
-  pthread_mutex_unlock(&seed_mutex);
+  increment_seed();
 
   while (1)
   {
@@ -39,16 +57,9 @@ void *thread(void *config_path)
     mate_memread(mate_ref, key, thread_name, sizeof(char) * 6);
     mate_memread(mate_ref, value, &current_value, sizeof(uint32_t));
     
+    calculate_value_and_increment_seed(&current_value);
+    print_thread_info(thread_name, current_value);
 
-    pthread_mutex_lock(&seed_mutex);
-    current_value += seed;
-    seed++;
-    pthread_mutex_unlock(&seed_mutex);
-
-    pthread_mutex_lock(&logger_mutex);
-    printf("thread name: %s", thread_name);
-    printf("value: %d", current_value);
-    pthread_mutex_unlock(&logger_mutex);
     mate_memwrite(mate_ref, current_value, value, sizeof(uint32_t));
   }
 
@@ -79,14 +90,9 @@ int main(int argc, char *argv[])
   mate_pointer value = mate_memalloc(mate_ref, sizeof(uint32_t));
   mate_memwrite(mate_ref, seed, value, sizeof(uint32_t));
 
-  pthread_mutex_lock(&logger_mutex);
-  log_info(logger, "thread name: %s", "MAIN");
-  log_info(logger, "value: %d", seed);
-  pthread_mutex_unlock(&logger_mutex);
+  print_thread_info("MAIN", seed);
 
-  pthread_mutex_lock(&seed_mutex);
-  seed++;
-  pthread_mutex_unlock(&seed_mutex);
+  increment_seed();
 
   pthread_t thread_id;
   pthread_create(&thread_id, NULL, &thread, (void)* config_path);
@@ -100,15 +106,9 @@ int main(int argc, char *argv[])
     mate_memread(mate_ref, key, thread_name, sizeof(char) * 5);
     mate_memread(mate_ref, value, &current_value, sizeof(uint32_t));
 
-    pthread_mutex_lock(&seed_mutex);
-    current_value += seed;
-    seed++;
-    pthread_mutex_unlock(&seed_mutex);
-
-    pthread_mutex_lock(&logger_mutex);
-    log_info(logger, "thread name: %s", thread_name);
-    log_info(logger, "value: %d", current_value);
-    pthread_mutex_unlock(&logger_mutex);
+    calculate_value_and_increment_seed(&current_value);
+    print_thread_info(thread_name, current_value);
+    
     mate_memwrite(mate_ref, current_value, value, sizeof(uint32_t));
   }
 
