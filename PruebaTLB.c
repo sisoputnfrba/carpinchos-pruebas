@@ -1,18 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <matelib.h>
+#include <lib/matelib.h>
 #include <commons/log.h>
+#include <semaphore.h>
 
-char* LOG_PATH = "./secuencia.log";
-char* PROGRAM_NAME = "secuencia";
+typedef struct thread_info
+{
+  char* mate_cfg_path;
+  uint32_t th_number;
+  sem_t* producer_sem;
+  sem_t* consumer_sem;
+} thread_info;
+
+char *LOG_PATH = "./secuencia.log";
+char *PROGRAM_NAME = "secuencia";
 uint32_t seed;
-pthread_mutex_t seed_mutex;
-t_log* logger;
+sem_t seed_sem_1;
+sem_t seed_sem_2;
+t_log *logger;
 pthread_mutex_t logger_mutex;
 
-void print_thread_info(char* thread_name, int value)
+void print_thread_info(char *thread_name, uint32_t value)
 {
   pthread_mutex_lock(&logger_mutex);
   log_info(logger, "thread name: %s", thread_name);
@@ -20,98 +31,90 @@ void print_thread_info(char* thread_name, int value)
   pthread_mutex_unlock(&logger_mutex);
 }
 
-void increment_seed()
-{
-  pthread_mutex_lock(&seed_mutex);
-  seed++;
-  pthread_mutex_unlock(&seed_mutex);
+void log_message(char *message) {
+  pthread_mutex_lock(&logger_mutex);
+  log_info(logger, message);
+  pthread_mutex_unlock(&logger_mutex);
 }
 
-void calculate_value_and_increment_seed(uint32_t* current_value)
+void calculate_value_and_increment_seed(uint32_t *current_value)
 {
-  pthread_mutex_lock(&seed_mutex);
-  (*current_value) += seed;
+  (*current_value) = seed;
   seed++;
-  pthread_mutex_unlock(&seed_mutex);
 }
 
-void *thread(void *config_path)
+void *thread(void *config)
 {
+  thread_info *info = (thread_info *) config;
+
+  char *thread_name = malloc(7);
+  sprintf(thread_name, "%s%d", "CARPINCHO", info->th_number);
+
   mate_instance mate_ref;
-  mate_init(&mate_ref, (char *)config_path);
-  mate_pointer key = mate_memalloc(mate_ref, sizeof(char) * 6);
-  mate_memwrite(mate_ref, "CHILD", key, sizeof(char) * 6);
+  mate_init(&mate_ref, info->mate_cfg_path);
 
-  mate_pointer value = mate_memalloc(mate_ref, sizeof(uint32_t));
-  mate_memwrite(mate_ref, seed, value, sizeof(uint32_t));
+  mate_pointer key = mate_memalloc(&mate_ref, 6);
+  mate_memwrite(&mate_ref, thread_name, key, 6);
 
-  print_thread_info("CHILD", seed);
+  mate_pointer value = mate_memalloc(&mate_ref, sizeof(uint32_t));
+  mate_memwrite(&mate_ref, &seed, value, sizeof(uint32_t));
+  print_thread_info(thread_name, seed);
 
-  increment_seed();
-
+  uint32_t current_value;
+  
   while (1)
   {
-    char *thread_name = malloc(sizeof(char) * 6);
-    uint32_t current_value;
+    sem_wait(info->producer_sem);
+    mate_memread(&mate_ref, key, thread_name, 6);
+    mate_memread(&mate_ref, value, &current_value, sizeof(uint32_t));
 
-    mate_memread(mate_ref, key, thread_name, sizeof(char) * 6);
-    mate_memread(mate_ref, value, &current_value, sizeof(uint32_t));
-    
     calculate_value_and_increment_seed(&current_value);
     print_thread_info(thread_name, current_value);
 
-    mate_memwrite(mate_ref, current_value, value, sizeof(uint32_t));
+    mate_memwrite(&mate_ref, &current_value, value, sizeof(uint32_t));
+    sem_post(info->consumer_sem);
   }
 
+  free(thread_name);
   mate_close(&mate_ref);
   return 0;
 }
 
 int main(int argc, char *argv[])
 {
-  if(argc != 2) {
-    printf("Debe ingresar el path del archivo de config")
-  }
-
-  char* config_path = argv[1];
-  seed = 1;
-  pthread_mutex_init(&seed_mutex, NULL);
-  pthread_mutex_init(&logger_mutex, NULL);
-  logger = log_create(LOG_PATH, PROGRAM_NAME, true, 3)
-
-  //Instancio la biblioteca
-  mate_instance mate_ref;
-  mate_init(&mate_ref, config_path);
-
-  //Pido memoria
-  mate_pointer key = mate_memalloc(mate_ref, sizeof(char) * 5);
-  mate_memwrite(mate_ref, "MAIN", key, sizeof(char) * 5);
-
-  mate_pointer value = mate_memalloc(mate_ref, sizeof(uint32_t));
-  mate_memwrite(mate_ref, seed, value, sizeof(uint32_t));
-
-  print_thread_info("MAIN", seed);
-
-  increment_seed();
-
-  pthread_t thread_id;
-  pthread_create(&thread_id, NULL, &thread, (void)* config_path);
-  pthread_detach(thread_id);
-
-  while (1)
+  logger = log_create(LOG_PATH, PROGRAM_NAME, true, 2);
+  if (argc != 2)
   {
-    char *thread_name = malloc(sizeof(char) * 5);
-    uint32_t current_value;
-
-    mate_memread(mate_ref, key, thread_name, sizeof(char) * 5);
-    mate_memread(mate_ref, value, &current_value, sizeof(uint32_t));
-
-    calculate_value_and_increment_seed(&current_value);
-    print_thread_info(thread_name, current_value);
-    
-    mate_memwrite(mate_ref, current_value, value, sizeof(uint32_t));
+    log_info(logger, "Debe ingresar el path del archivo de config\n");
+    return -1;
   }
 
-  mate_close(&mate_ref);
+  char *config_path = argv[1];
+  seed = 1;
+  pthread_mutex_init(&logger_mutex, NULL);
+  sem_init(&seed_sem_1, 0, 1);
+  sem_init(&seed_sem_2, 0, 0);
+
+  pthread_t carpincho_th_1;
+  pthread_t carpincho_th_2;
+
+  thread_info *th_1_info = malloc(sizeof(thread_info));
+  th_1_info->mate_cfg_path = config_path;
+  th_1_info->th_number = 1;
+  th_1_info->consumer_sem = &seed_sem_2;
+  th_1_info->producer_sem = &seed_sem_1;
+
+  thread_info *th_2_info = malloc(sizeof(thread_info));
+  th_2_info->mate_cfg_path = config_path;
+  th_2_info->th_number = 2;
+  th_2_info->consumer_sem = &seed_sem_1;
+  th_2_info->producer_sem = &seed_sem_2;
+
+  pthread_create(&carpincho_th_1, NULL, &thread, (void *)th_1_info);
+  pthread_create(&carpincho_th_2, NULL, &thread, (void *)th_2_info);
+  
+  pthread_join(carpincho_th_1, NULL);
+  pthread_join(carpincho_th_2, NULL);
+  
   return 0;
 }
