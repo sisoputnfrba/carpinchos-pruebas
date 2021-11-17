@@ -122,7 +122,7 @@ void* carpincho2_func(void* config){
 	printf("C2 - Freno a C2\n");
 	sem_wait(&semCarpincho2);
 
-	void* localMalloc = malloc(5)
+	void* localMalloc = malloc(5);
 
 	printf("C2 - LEO de la página 0\n");
 	mate_memread(&instanceC2, alloc0, localMalloc , 5);
@@ -177,7 +177,7 @@ void* carpincho3_func(void* config){
 	printf("C3 - Freno a C3\n");
 	sem_wait(&semCarpincho3);
 
-	void* localMalloc = malloc(5)
+	void* localMalloc = malloc(5);
 
 	printf("C3 - LEO de la página 0\n");
 	mate_memread(&instanceC3, alloc0, localMalloc , 5);
