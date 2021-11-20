@@ -43,18 +43,18 @@ void calculate_value_and_increment_seed(uint32_t *current_value)
   seed++;
 }
 
-void *thread(void *config)
+void *carpincho(void *config)
 {
   thread_info *info = (thread_info *) config;
 
-  char *thread_name = malloc(7);
+  char *thread_name = malloc(10);
   sprintf(thread_name, "%s%d", "CARPINCHO", info->th_number);
 
   mate_instance mate_ref;
   mate_init(&mate_ref, info->mate_cfg_path);
 
-  mate_pointer key = mate_memalloc(&mate_ref, 6);
-  mate_memwrite(&mate_ref, thread_name, key, 6);
+  mate_pointer key = mate_memalloc(&mate_ref, 10);
+  mate_memwrite(&mate_ref, thread_name, key, 10);
 
   mate_pointer value = mate_memalloc(&mate_ref, sizeof(uint32_t));
   mate_memwrite(&mate_ref, &seed, value, sizeof(uint32_t));
@@ -65,7 +65,7 @@ void *thread(void *config)
   while (1)
   {
     sem_wait(info->producer_sem);
-    mate_memread(&mate_ref, key, thread_name, 6);
+    mate_memread(&mate_ref, key, thread_name, 10);
     mate_memread(&mate_ref, value, &current_value, sizeof(uint32_t));
 
     calculate_value_and_increment_seed(&current_value);
@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
   th_2_info->consumer_sem = &seed_sem_1;
   th_2_info->producer_sem = &seed_sem_2;
 
-  pthread_create(&carpincho_th_1, NULL, &thread, (void *)th_1_info);
-  pthread_create(&carpincho_th_2, NULL, &thread, (void *)th_2_info);
+  pthread_create(&carpincho_th_1, NULL, &carpincho, (void *)th_1_info);
+  pthread_create(&carpincho_th_2, NULL, &carpincho, (void *)th_2_info);
   
   pthread_join(carpincho_th_1, NULL);
   pthread_join(carpincho_th_2, NULL);
