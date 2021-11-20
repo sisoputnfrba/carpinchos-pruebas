@@ -70,7 +70,7 @@ void* carpincho1_func(void* config){
 	mate_memwrite(&instanceC1, "Chau", alloc2, 5);
 
 	printf("C1 - Escribo en las páginas 3, 4, 5 y 6\n");
-	mate_memwrite(&instanceC1, "Animalia Chordata Mammalia Rodentia Hystricognathi Caviidae Hydrochoerus hydrochaeris, aka Carpicho", alloc3, 100);
+	mate_memwrite(&instanceC1, "Animalia Chordata Mammalia Rodentia Hystricognathi Caviidae Hydrochoerus hydrochaeris, aka Carpincho", alloc3, 100);
 
 	printf("C1 - Reservo un alloc de 53 bytes\n");
 	mate_pointer alloc4 = mate_memalloc(&instanceC1, 53);
