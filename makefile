@@ -9,7 +9,7 @@ LIBS := -lmatelib -lpthread -lcommons
 RM := rm -rf
 
 # compilar --> Compila todos los carpinchos
-compilar:
+compile:
 	mkdir build
 	gcc -o "build/BatallaPorNordelta" BatallaPorNordelta.c $(LIBS)
 	gcc -o "build/PruebaAsignacion" PruebaAsignacion.c $(LIBS)
