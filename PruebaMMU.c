@@ -51,14 +51,23 @@ void* carpincho1_func(void* config){
 	printf("C1 - Freno a C1\n");
 	sem_wait(&semCarpincho1);
 
-	printf("C1 - Reservo un alloc de 119 bytes\n");
-	mate_pointer alloc3 = mate_memalloc(&instanceC1, 119);
+	printf("C1 - Reservo un alloc de 23 bytes\n");
+	mate_pointer alloc3 = mate_memalloc(&instanceC1, 23);
+
+	printf("C1 - Reservo un alloc de 23 bytes\n");
+	mate_pointer alloc4 = mate_memalloc(&instanceC1, 23);
+
+	printf("C1 - Reservo un alloc de 23 bytes\n");
+	mate_pointer alloc5 = mate_memalloc(&instanceC1, 23);
+
+	printf("C1 - Reservo un alloc de 23 bytes\n");
+	mate_pointer alloc6 = mate_memalloc(&instanceC1, 23);
 
 	printf("C1 - Escribo en la página 0\n");
 	mate_memwrite(&instanceC1, "Hola", alloc0, 5);
 
 	printf("C1 - Escribo en la página 1\n");
-	mate_memwrite(&instanceC1, "Hola", alloc1, 5);
+	mate_memwrite(&instanceC1, "Chau", alloc1, 5);
 
 	printf("C1 - Libero al C2\n");
 	sem_post(&semCarpincho2);
@@ -67,13 +76,16 @@ void* carpincho1_func(void* config){
 	sem_wait(&semCarpincho1);
 
 	printf("C1 - Escribo en la página 2\n");
-	mate_memwrite(&instanceC1, "Chau", alloc2, 5);
+	mate_memwrite(&instanceC1, "Carpincho", alloc2, 10);
 
-	printf("C1 - Escribo en las páginas 3, 4, 5 y 6\n");
-	mate_memwrite(&instanceC1, "Animalia Chordata Mammalia Rodentia Hystricognathi Caviidae Hydrochoerus hydrochaeris, aka Carpincho", alloc3, 100);
+	printf("C1 - Escribo en la página 3\n");
+	mate_memwrite(&instanceC1, "Capibara", alloc3, 9);
 
-	printf("C1 - Reservo un alloc de 53 bytes\n");
-	mate_pointer alloc4 = mate_memalloc(&instanceC1, 53);
+	printf("C1 - Escribo en la página 4\n");
+	mate_memwrite(&instanceC1, "Hydrochaeris", alloc4, 13);
+
+	printf("C1 - Reservo un alloc de 21 bytes\n");
+	mate_pointer alloc7 = mate_memalloc(&instanceC1, 21);
 
 	printf("C1 - Libero al C2 para que finalice\n");
 	sem_post(&semCarpincho2);
@@ -124,10 +136,10 @@ void* carpincho2_func(void* config){
 
 	void* localMalloc = malloc(5);
 
-	printf("C2 - LEO de la página 0\n");
+	printf("C2 - Leo de la página 0\n");
 	mate_memread(&instanceC2, alloc0, localMalloc , 5);
 
-	printf("C2 - LEO de la página 1\n");
+	printf("C2 - Leo de la página 1\n");
 	mate_memread(&instanceC2, alloc1, localMalloc, 5);
 
 	printf("C2 - Libero al C3\n");
@@ -179,10 +191,10 @@ void* carpincho3_func(void* config){
 
 	void* localMalloc = malloc(5);
 
-	printf("C3 - LEO de la página 0\n");
+	printf("C3 - Leo de la página 0\n");
 	mate_memread(&instanceC3, alloc0, localMalloc , 5);
 
-	printf("C3 - LEO de la página 1\n");
+	printf("C3 - Leo de la página 1\n");
 	mate_memread(&instanceC3, alloc1, localMalloc, 5);
 
 	printf("C3 - Libero al C1\n");
