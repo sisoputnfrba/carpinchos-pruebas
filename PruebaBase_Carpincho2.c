@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
 	mate_init(&instance, (char*)config);
 
-    char* saludo = "¡Hola mundo!\n";
+    char saludo[] = "¡Hola mundo!\n";
 
     mate_pointer saludoRef = mate_memalloc(&instance, strlen(saludo));
 
