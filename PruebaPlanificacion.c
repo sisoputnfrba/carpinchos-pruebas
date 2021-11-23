@@ -22,6 +22,7 @@ void exec_carpincho_1(char *config)
 {
     mate_instance self;
     mate_init(&self, config);
+    sem_post(va_el_2);
     for (int i = 0; i < 3; i++)
     {
         imprimir_carpincho_n_hace_algo(1);
@@ -34,6 +35,7 @@ void exec_carpincho_1(char *config)
 void exec_carpincho_2(char *config)
 {
     mate_instance self;
+    sem_wait(va_el_2);
     mate_init(&self, config);
     sem_post(va_el_3); //Creo que esta demas, es para que el 3 entre dsp del 2
     for (int i = 0; i < 3; i++)
@@ -48,8 +50,8 @@ void exec_carpincho_2(char *config)
 void exec_carpincho_3(char *config)
 {
     mate_instance self;
-    mate_init(&self, config);
     sem_wait(va_el_3);
+    mate_init(&self, config);
     for (int i = 0; i < 3; i++)
     {
         imprimir_carpincho_n_hace_algo(3);
