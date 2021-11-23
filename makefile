@@ -5,34 +5,31 @@
 # Agrego las libs
 LIBS := -lmatelib -lpthread -lcommons
 
-#Agrego comandos extra
+# Agrego los archivos a compilar (todos los archivos *.c en esta carpeta)
+CAPY_SRCS := $(wildcard *.c)
+
+# Agrego los nombres de los carpinchos (que van a estar en una carpeta "build")
+CARPINCHOS := $(CAPY_SRCS:%.c=build/%)
+
+# Agrego los headers de matelib
+HEADERS := -I. -I./lib
+
+# Agrego comandos extra
 RM := rm -rf
+CC := gcc
 
-# compilar --> Compila todos los carpinchos
-compile:
-	mkdir build
-	gcc -o "build/BatallaPorNordelta" BatallaPorNordelta.c $(LIBS)
-	gcc -o "build/PruebaAsignacion" PruebaAsignacion.c $(LIBS)
-	gcc -o "build/PruebaBase_Carpincho1" PruebaBase_Carpincho1.c $(LIBS)
-	gcc -o "build/PruebaBase_Carpincho2" PruebaBase_Carpincho2.c $(LIBS)
-	gcc -o "build/PruebaDeadlock" PruebaDeadlock.c $(LIBS)
-	gcc -o "build/PruebaMMU" PruebaMMU.c $(LIBS)
-	gcc -o "build/PruebaPlanificacion" PruebaPlanificacion.c $(LIBS)
-	gcc -o "build/PruebaSuspension" PruebaSuspension.c $(LIBS)
-	gcc -o "build/prueba_swamp" prueba_swamp.c $(LIBS)
-	gcc -o "build/prueba_tlb_fifo" prueba_tlb_fifo.c $(LIBS)
-	gcc -o "build/prueba_tlb_lru" prueba_tlb_lru.c $(LIBS)
+# compile --> Crea la carpeta "build" y compila todos los carpinchos
+compile: build $(CARPINCHOS)
 
+build:
+	mkdir $@
 
-# Install --> Copia el archivo matlib.h a /usr/include y a /usr/include/libs
-install:
-	sudo mkdir /usr/include/lib/
-	sudo cp "./matelib_headers/matelib.h" "/usr/include/matelib.h"
-	sudo cp "./matelib_headers/matelib.h" "/usr/include/lib/matelib.h"
+build/%: %.c
+	$(CC) $(HEADERS) -o "$@" $^ $(LIBS)
 
-
-# Limpiar todos los carpinchos
+# clean --> Limpia todos los carpinchos
 clean:
 	-$(RM) build
 
-
+.PHONY:
+	compile clean
