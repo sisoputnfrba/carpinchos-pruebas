@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
 	sleep(1);
 	pthread_create(&carpincho3, NULL, carpincho3_func, argv[1]);
 	sleep(1);
-	pthread_create(&carpincho3, NULL, carpincho4_func, argv[1]);
+	pthread_create(&carpincho4, NULL, carpincho4_func, argv[1]);
 
 	pthread_join(carpincho4, NULL);
 	pthread_join(carpincho3, NULL);
