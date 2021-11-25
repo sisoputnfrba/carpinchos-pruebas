@@ -40,5 +40,7 @@ int main(int argc, char *argv[]) {
 
     mate_sem_post(&instance, SEMAFORO_SALUDO);
 
+    mate_close(&instance);
+
 	return EXIT_SUCCESS;
 }

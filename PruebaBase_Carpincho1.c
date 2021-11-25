@@ -42,5 +42,7 @@ int main(int argc, char *argv[]) {
 
     printf(saludo);
 
+    mate_close(&instance);
+
 	return EXIT_SUCCESS;
 }
