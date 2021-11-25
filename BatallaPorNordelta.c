@@ -103,7 +103,7 @@ void* carpincho2_func(void *config) {
 	mate_init(&instance, (char*) config);
 
 	printf("C2 - Abro una botella de smirnoff\n");
-	mate_sem_init(&instance, "smirnoffc2", 0);
+	mate_sem_init(&instance, "smirnoffc2", 1);
 	mate_sem_init(&instance, "smirnoffc3", 0);
 	mate_sem_post(&instance, "smirnoffc3");
 	mate_sem_wait(&instance, "smirnoffc2");
@@ -294,9 +294,9 @@ void* carpincho8_func(void *config) {
 	mate_init(&instance, (char*) config);
 
 	printf("C8 - Soy el carpincho vago, no pienso hacer nada\n");
-	sleep(30);
+	sleep(60);
 
-	printf("C8 - Se retira a descansar\n");
+	printf("C8 - Se retira a descansar de nuevo...\n");
 	mate_close(&instance);
 
 	return 0;
