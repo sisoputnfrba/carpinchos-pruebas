@@ -11,11 +11,14 @@ objetivos:
 Este objetivo va a generar los carpinchos a ejecutar dentro del directorio 
 build.
 
-Es muy importante haber realizado **una** de estas dos acciones antes de 
-ejecutarlo:
+Es muy importante primero haber compilado la biblioteca `matelib` desarrollada 
+por el grupo y haberla agregado a una ruta que tanto el compilador (`gcc`) como
+el linker (`ld`) reconozcan. Existen dos formas de hacerlo:
 
-a. Copiar el archivo `*.so` que se genera al compilar matelib en **uno** de los
-directorios donde el compilador va a buscar las bibliotecas compartidas:
+### Alternativa 1
+
+Copiar el archivo `libmatelib.so` que se genera al compilar matelib en **uno** 
+de los directorios donde el compilador va a buscar las bibliotecas compartidas:
 ```
 /usr/local/lib
 /usr/lib
@@ -23,8 +26,10 @@ directorios donde el compilador va a buscar las bibliotecas compartidas:
 ```
 💡 ¡Deberás contar con permisos de `root` para poder copiarlo!
 
-b. Agregar el directorio donde se encuentra el archivo `*.so` a las variables 
-de entorno:
+### Alternativa 2
+
+Agregar el directorio donde se encuentra el archivo `libmatelib.so` a las 
+variables de entorno:
 
 - `LIBRARY_PATH`, para que `gcc` las incluya al compilar; y
 - `LD_LIBRARY_PATH`, para que se vinculen al momento de ejecutar cada 
