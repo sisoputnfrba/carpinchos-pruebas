@@ -116,7 +116,7 @@ void* carpincho2_func(void *config) {
 	mate_pointer puntero = 0;
 	while (a <= 64) {
 		puntero = mate_memalloc(&instance, 100);
-		usleep(5000);
+		usleep(200);
 		mate_memfree(&instance, puntero);
 		printf("C2 - %d Jardines destruidos!!\n", a);
 		a++;
@@ -247,7 +247,7 @@ void* carpincho6_func(void *config) {
 	int a = 1;
 	int b = 0;
 	while (a <= 256) {
-		usleep(5000);
+		usleep(200);
 		mate_memwrite(&instance, &a, alloc, 4);
 		mate_memread(&instance, alloc, &b, 4);
 		printf("C6 - Ya destrui %d macetas... \n", b);
@@ -274,7 +274,7 @@ void* carpincho7_func(void *config) {
 	int a = 1;
 	while (a <= 256) {
 		mate_sem_post(&instance, "SEMAFORO_NUEVO");
-		usleep(5000);
+		usleep(200);
 		mate_sem_wait(&instance, "SEMAFORO_NUEVO");
 		printf("C7 - Vuelta número %d... \n", a);
 		a++;
